@@ -18,11 +18,13 @@ st.set_page_config(
 # -----------------------------------
 st.markdown("""
 <style>
-
-@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap');
+@font-face {
+    font-family: 'Ownglyph_Nana';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2202@1.0/Ownglyph_Nana-Rg.woff') format('woff');
+}
 
 html, body, [class*="css"] {
-    font-family: 'Gaegu', cursive;
+    font-family: 'Ownglyph_Nana';
 }
 
 .stApp {
