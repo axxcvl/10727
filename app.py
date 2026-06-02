@@ -190,5 +190,133 @@ with st.sidebar:
 - 여름 남친룩 추천해줘
 - 초보 메이크업 순서 알려줘
 - 피부 좋아지는 습관 알려줘
-- 자신감을 높이는 방법은?
-""")
+    st.markdown("""
+<link href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2107@1.1/Cafe24Ssurround.css" rel="stylesheet">
+
+<style>
+
+/* 전체 페이지 */
+.stApp {
+    background: linear-gradient(
+        180deg,
+        #dff6ff 0%,
+        #f4fbff 50%,
+        #ffffff 100%
+    );
+}
+
+/* 전체 폰트 */
+html, body, [class*="css"] {
+    font-family: 'Cafe24Ssurround', sans-serif;
+}
+
+/* 상단 제목 */
+h1 {
+    color: #ff6fa8;
+    text-align: center;
+    font-size: 2.3rem;
+    font-weight: bold;
+    text-shadow: 2px 2px #ffffff;
+}
+
+/* 설명글 */
+.stCaption {
+    text-align: center;
+    color: #666666;
+}
+
+/* 채팅 말풍선 공통 */
+[data-testid="stChatMessage"] {
+    border-radius: 25px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border: 2px solid #d8ecff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* 사용자 말풍선 */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {
+    background-color: #ffeef5;
+    border-color: #ffcde1;
+}
+
+/* 챗봇 말풍선 */
+[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
+    background-color: #eef8ff;
+    border-color: #cde8ff;
+}
+
+/* 입력창 */
+[data-testid="stChatInput"] {
+    border-radius: 30px;
+}
+
+/* 버튼 */
+.stButton button {
+    border-radius: 20px;
+    background-color: #9ed8ff;
+    color: white;
+    border: none;
+    font-weight: bold;
+}
+
+.stButton button:hover {
+    background-color: #7ec8ff;
+}
+
+/* 사이드바 */
+section[data-testid="stSidebar"] {
+    background-color: #eaf7ff;
+    border-right: 3px solid #d4ecff;
+}
+
+/* 사이드바 제목 */
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: #4d92c7;
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f5fbff;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #b7deff;
+    border-radius: 20px;
+}
+
+/* 채팅 영역 */
+.main .block-container {
+    padding-top: 2rem;
+    max-width: 900px;
+}
+
+/* 싸이월드 느낌 카드 */
+.cyworld-box {
+    background: white;
+    border: 2px solid #cfe8ff;
+    border-radius: 20px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+/* 반짝이는 포인트 컬러 */
+.pink {
+    color: #ff74a6;
+}
+
+.blue {
+    color: #6db8ff;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🌸 오늘의 다이어리 🌸")
+st.caption("연애 · 스타일 · 글로우업 고민을 편하게 이야기해보세요")
