@@ -11,7 +11,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("💖 Love & Glow Coach")
+st.title("💖")
 st.caption("연애상담 · 헤어 · 패션 · 메이크업 · 자기관리")
 
 # ---------------------------------
