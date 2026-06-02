@@ -1,426 +1,194 @@
 import streamlit as st
-st.title('연애 코칭 웹앱')
-st.write('2026')
-import streamlit as st
-from datetime import datetime
-import random
-# -----------------------------------
+from google import genai
+from google.genai import types
+
+# ---------------------------------
 # 페이지 설정
-# -----------------------------------
+# ---------------------------------
 st.set_page_config(
-    page_title="버디러브 💖",
-    page_icon="💌",
-    layout="wide"
+    page_title="Love & Glow Coach",
+    page_icon="💖",
+    layout="centered"
 )
 
-# -----------------------------------
-# 레트로 감성 CSS
-# -----------------------------------
-st.markdown("""
-<style>
-@font-face {
-    font-family: 'Ownglyph_Nana';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2202@1.0/Ownglyph_Nana-Rg.woff') format('woff');
-}
+st.title("💖 Love & Glow Coach")
+st.caption("연애상담 · 헤어 · 패션 · 메이크업 · 자기관리")
 
-html, body, [class*="css"] {
-    font-family: 'Ownglyph_Nana';
-}
+# ---------------------------------
+# Gemini API Key
+# ---------------------------------
+try:
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    st.error(
+        "GEMINI_API_KEY가 설정되지 않았습니다.\n\n"
+        "Streamlit Secrets에 API 키를 등록해주세요."
+    )
+    st.stop()
 
-.stApp {
-    background: linear-gradient(to bottom, #fff0f7, #ffe5f1);
-}
+# ---------------------------------
+# Gemini Client
+# ---------------------------------
+try:
+    client = genai.Client(api_key=API_KEY)
+except Exception as e:
+    st.error(f"Gemini 초기화 실패: {e}")
+    st.stop()
 
-/* 상단 타이틀 */
-.main-title {
-    text-align: center;
-    font-size: 70px;
-    color: #ff4fa3;
-    font-weight: bold;
-    text-shadow: 3px 3px #ffffff;
-}
+# ---------------------------------
+# 시스템 프롬프트
+# ---------------------------------
+SYSTEM_PROMPT = """
+너는 'Love & Glow Coach'라는 AI 챗봇이다.
 
-.sub-title {
-    text-align: center;
-    color: #ff7eb8;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
+전문 분야:
+1. 연애 상담
+2. 썸 상담
+3. 이별 상담
+4. 자기관리
+5. 글로우업
+6. 헤어스타일 추천
+7. 패션 스타일링
+8. 메이크업 팁
+9. 피부 관리
+10. 자신감 향상
 
-/* 카드 */
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 25px;
-    border: 3px solid #ffc7df;
-    box-shadow: 0px 4px 10px rgba(255,105,180,0.2);
-    margin-bottom: 20px;
-}
+규칙:
+- 친절하고 공감하는 말투 사용
+- 현실적인 조언 제공
+- 사용자를 비난하지 않음
+- 단계별로 설명
+- 연애 문제는 감정 공감 후 조언
+- 외모 관련 질문은 건강하고 긍정적인 방향으로 답변
+- 위험하거나 유해한 미용법은 추천하지 않음
 
-/* 채팅 */
-.user-msg {
-    background: #d8fff0;
-    padding: 14px;
-    border-radius: 18px;
-    margin: 10px 0;
-    border: 2px solid #9df5d5;
-    font-size: 22px;
-}
+답변 스타일:
+- 읽기 쉽게 작성
+- 적절한 이모지 사용
+- 너무 길지 않게 작성
+"""
 
-.ai-msg {
-    background: #ffe0ef;
-    padding: 14px;
-    border-radius: 18px;
-    margin: 10px 0;
-    border: 2px solid #ffb8d5;
-    font-size: 22px;
-}
-
-/* 버튼 */
-.stButton > button {
-    background: linear-gradient(to right, #ff7eb8, #ffb6d9);
-    color: white;
-    border: none;
-    border-radius: 15px;
-    padding: 12px 20px;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.stButton > button:hover {
-    background: linear-gradient(to right, #ff5fa2, #ff9ac7);
-}
-
-/* 입력창 */
-textarea {
-    border-radius: 15px !important;
-    border: 3px solid #ffc2de !important;
-    font-size: 22px !important;
-}
-
-/* 사이드바 */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(to bottom, #ffe8f3, #ffd7ea);
-}
-
-/* 상태 */
-.status-box {
-    background: #fff;
-    padding: 12px;
-    border-radius: 15px;
-    border: 2px dashed #ff99c8;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-/* 음악 카드 */
-.music-card {
-    background: #fff8fc;
-    padding: 12px;
-    border-radius: 15px;
-    border: 2px solid #ffc2de;
-    margin-bottom: 10px;
-}
-
-/* 반짝 */
-.blink {
-    animation: blink-animation 1.5s infinite;
-}
-
-@keyframes blink-animation {
-    50% {
-        opacity: 0.5;
-    }
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# -----------------------------------
+# ---------------------------------
 # 세션 상태
-# -----------------------------------
+# ---------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# -----------------------------------
-# 랜덤 데이터
-# -----------------------------------
-love_quotes = [
-    "사랑은 타이밍이래 💖",
-    "오늘은 먼저 연락해보는 건 어때? ✨",
-    "두근거림은 시작의 신호 🌸",
-    "너의 매력은 생각보다 훨씬 커 😊",
-    "썸은 작은 관심에서 시작돼 💌"
-]
+# ---------------------------------
+# 이전 대화 출력
+# ---------------------------------
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-bgm_list = [
-    "🎵 아이유 - 좋은날",
-    "🎵 SG워너비 - Timeless",
-    "🎵 버즈 - 겁쟁이",
-    "🎵 소녀시대 - Kissing You",
-    "🎵 NewJeans - Ditto"
-]
+# ---------------------------------
+# 채팅 입력
+# ---------------------------------
+prompt = st.chat_input(
+    "연애 고민이나 글로우업 고민을 입력하세요..."
+)
 
-reply_list = [
-    "나도 너랑 얘기하면 기분 좋아 😊",
-    "오늘 하루 어땠어? 💖",
-    "답장 기다리고 있었어 😳",
-    "다음엔 같이 가자 🌸",
-    "너랑 있으면 편해 ✨"
-]
+if prompt:
 
-mbti_love = {
-    "INFP": "감성적인 사랑꾼 💖",
-    "ENFP": "설렘 가득 직진형 🌸",
-    "INTJ": "츤데레 스타일 😎",
-    "ESFJ": "다정다감 케어형 🥰"
-}
+    # 사용자 메시지 저장
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": prompt
+        }
+    )
 
-# -----------------------------------
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+
+        try:
+
+            # 대화 기록 구성
+            conversation = ""
+
+            for m in st.session_state.messages:
+                role = "사용자" if m["role"] == "user" else "AI"
+                conversation += f"{role}: {m['content']}\n"
+
+            final_prompt = f"""
+{SYSTEM_PROMPT}
+
+현재까지 대화:
+
+{conversation}
+
+AI 답변:
+"""
+
+            response = client.models.generate_content(
+                model="gemini-2.5-flash-lite",
+                contents=final_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.8,
+                    max_output_tokens=800,
+                )
+            )
+
+            answer = response.text
+
+            st.markdown(answer)
+
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": answer
+                }
+            )
+
+        except Exception as e:
+
+            error_msg = f"""
+❌ 오류가 발생했습니다.
+
+오류 내용:
+{str(e)}
+
+잠시 후 다시 시도해주세요.
+"""
+
+            st.error(error_msg)
+
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": error_msg
+                }
+            )
+
+# ---------------------------------
 # 사이드바
-# -----------------------------------
+# ---------------------------------
 with st.sidebar:
 
-    st.markdown("# 💖 버디러브")
+    st.header("✨ Love & Glow Coach")
+
+    st.write(
+        "연애와 자기관리를 함께 도와주는 AI 코치"
+    )
+
+    if st.button("🗑️ 대화 초기화"):
+        st.session_state.messages = []
+        st.rerun()
+
+    st.divider()
+
+    st.subheader("💡 질문 예시")
 
     st.markdown("""
-    <div class='status-box blink'>
-    🟢 접속중
-    </div>
-    """, unsafe_allow_html=True)
-
-    nickname = st.text_input("💌 닉네임", value="핑크토끼")
-
-    mood = st.selectbox(
-        "🌈 오늘 기분",
-        ["설렘", "짝사랑", "썸", "재회", "연애중", "이별"]
-    )
-
-    mbti = st.selectbox(
-        "✨ MBTI",
-        ["INFP", "ENFP", "INTJ", "ESFJ"]
-    )
-
-    st.markdown("---")
-
-    st.markdown("## 💬 상태메시지")
-
-    status_msg = st.text_input(
-        "",
-        value="너만 보면 심장이 두근💖"
-    )
-
-    st.markdown("---")
-
-    st.markdown("## 🎵 오늘의 BGM")
-
-    for _ in range(3):
-        st.markdown(
-            f"""
-            <div class='music-card'>
-            {random.choice(bgm_list)}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-# -----------------------------------
-# 상단 헤더
-# -----------------------------------
-st.markdown(
-    """
-    <div class='main-title'>
-    💖 버디러브 💖
-    </div>
-    <div class='sub-title'>
-    버디버디 감성 연애 코칭 공간 🌸
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# -----------------------------------
-# 상단 카드
-# -----------------------------------
-colA, colB, colC = st.columns(3)
-
-with colA:
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>🌈 오늘 기분</h2>
-        <h1>{mood}</h1>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with colB:
-    love_score = random.randint(70, 99)
-
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>💘 연애운</h2>
-        <h1>{love_score}점</h1>
-        오늘은 연락운 상승✨
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-with colC:
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>✨ MBTI 연애스타일</h2>
-        <h3>{mbti_love[mbti]}</h3>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# -----------------------------------
-# 메인 레이아웃
-# -----------------------------------
-left, right = st.columns([2, 1])
-
-# -----------------------------------
-# 채팅
-# -----------------------------------
-with left:
-
-    st.markdown("## 💬 연애 상담 채팅")
-
-    user_input = st.text_area(
-        "고민 입력",
-        placeholder="예: 썸남이 답장이 느린데 관심 없는 걸까?"
-    )
-
-    if st.button("💌 상담받기"):
-
-        if user_input.strip() != "":
-
-            st.session_state.messages.append({
-                "role": "user",
-                "content": user_input
-            })
-
-            ai_reply = random.choice([
-                "상대도 조심스럽게 다가오는 중일 수 있어 💖",
-                "답장 속도보다 대화의 분위기가 더 중요해 😊",
-                "지금은 자연스럽게 가까워지는 흐름 같아 ✨",
-                "너무 불안해하지 않아도 괜찮아 🌸",
-                "상대도 너를 신경 쓰고 있는 것 같아 👀"
-            ])
-
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": ai_reply
-            })
-
-    # 채팅 출력
-    for msg in st.session_state.messages:
-
-        if msg["role"] == "user":
-
-            st.markdown(
-                f"""
-                <div class='user-msg'>
-                🧑 {nickname}<br><br>
-                {msg["content"]}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        else:
-
-            st.markdown(
-                f"""
-                <div class='ai-msg'>
-                💖 연애코치 루나<br><br>
-                {msg["content"]}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-# -----------------------------------
-# 우측 패널
-# -----------------------------------
-with right:
-
-    st.markdown("## 🌸 오늘의 한마디")
-
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>{random.choice(love_quotes)}</h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("## 💌 추천 답장")
-
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>{random.choice(reply_list)}</h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("## 🕒 현재 시간")
-
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    st.markdown(
-        f"""
-        <div class='card'>
-        <h2>{now}</h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.markdown("## 🌟 오늘의 인기 고민")
-
-    고민목록 = [
-        "썸남 답장 느릴 때",
-        "재회 가능성 있을까?",
-        "읽씹 후 연락법",
-        "고백 타이밍",
-        "짝사랑 성공법"
-    ]
-
-    for 고민 in 고민목록:
-        st.markdown(
-            f"""
-            <div class='music-card'>
-            💭 {고민}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-# -----------------------------------
-# 하단
-# -----------------------------------
-st.markdown("---")
-
-st.markdown(
-    """
-    <center>
-    <h3 style='color:#ff69b4;'>
-    💖 BuddyLove Retro Edition 💖
-    </h3>
-    <p style='font-size:22px; color:#ff8ab8;'>
-    버디버디 + 싸이월드 감성 연애 웹앱 🌸
-    </p>
-    </center>
-    """,
-    unsafe_allow_html=True
-)
+- 썸남이 갑자기 연락이 줄었어
+- 전애인이 자꾸 생각나
+- 고백해도 될까?
+- 장거리 연애 잘하는 법 알려줘
+- 내 얼굴형에 맞는 헤어 추천해줘
+- 여름 남친룩 추천해줘
+- 초보 메이크업 순서 알려줘
+- 피부 좋아지는 습관 알려줘
+- 자신감을 높이는 방법은?
+""")
