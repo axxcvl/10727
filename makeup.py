@@ -75,7 +75,7 @@ MAKEUP_LIBRARY = {
     • 투명한 피부 표현
     """,
 
-    "💕 러블리 메이크업":
+    "💕 핑크 메이크업":
     """
     • 핑크 블러셔
     • 반짝이 애교살
@@ -175,7 +175,7 @@ def recommend_makeup(
 # --------------------
 
 st.markdown(
-    "<div class='main-title'>💄 화장법 연구소 💖</div>",
+    "<div class='main-title'>💄 화장법 추천 💖</div>",
     unsafe_allow_html=True
 )
 
