@@ -3,7 +3,7 @@ from PIL import Image
 import random
 
 st.set_page_config(
-    page_title="💖 화장법 연구소",
+    page_title="💖 화장법 추천",
     page_icon="💄",
     layout="wide"
 )
